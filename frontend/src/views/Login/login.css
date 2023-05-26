@@ -31,17 +31,6 @@
   margin-left: 50px;
 }
 
-.spline-image {
-  width: 100%;
-  object-fit: cover;
-}
-
-.spline-scene {
-  background-color: black;
-  display: flex;
-  align-items: center;
-}
-
 .loginForm {
   display: flex;
   flex-direction: column;

@@ -10,7 +10,7 @@ import {
 import { setContext } from "@apollo/client/link/context";
 
 const httpLink = createHttpLink({
-  uri: "http://localhost:9000",
+  uri: "https://fjaesbog-gateway.azurewebsites.net/",
 });
 
 const authLink = setContext(() => {

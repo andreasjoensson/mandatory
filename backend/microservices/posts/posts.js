@@ -8,13 +8,8 @@ const cacheMiddleware = require("./cache/cacheMiddleware");
 
 module.exports = {
   Query: {
-    getPosts: async (_, {}, context) => {
-      const user = checkAuth(context);
-
-      const res = await pool.query(
-        "SELECT * FROM posts WHERE isprivate = false OR user_id = $1",
-        [user.user_id]
-      );
+    getPosts: async (_) => {
+      let res = await pool.query("SELECT * FROM posts");
       return res.rows;
     },
     getPostsFromUser: cacheMiddleware(async (_, { name }) => {
@@ -75,44 +70,6 @@ module.exports = {
       } finally {
         client.release();
       }
-    },
-    makePostPrivate: async (_, { post_id }, context) => {
-      const user = checkAuth(context);
-
-      //if user is not the owner of the post
-      const post = await pool.query("SELECT * FROM posts WHERE post_id = $1", [
-        post_id,
-      ]);
-
-      if (post.rows[0].user_id !== user.user_id) {
-        throw new Error("You are not the owner of this post");
-      } else {
-        await pool.query(
-          "UPDATE posts SET isPrivate = true WHERE post_id = $1 RETURNING *",
-          [post_id]
-        );
-      }
-
-      return post.rows[0];
-    },
-    makePostPublic: async (_, { post_id }, context) => {
-      const user = checkAuth(context);
-
-      //if user is not the owner of the post
-      const post = await pool.query("SELECT * FROM posts WHERE post_id = $1", [
-        post_id,
-      ]);
-
-      if (post.rows[0].user_id !== user.user_id) {
-        throw new Error("You are not the owner of this post");
-      } else {
-        await pool.query(
-          "UPDATE posts SET isPrivate = false WHERE post_id = $1 RETURNING *",
-          [post_id]
-        );
-      }
-
-      return post.rows[0];
     },
     async deletePost(_, { post_id }) {
       const post = await pool.query(

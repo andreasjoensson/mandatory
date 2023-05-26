@@ -19,21 +19,8 @@ import "moment/locale/da";
 import { EmojiEmotionsOutlined } from "@material-ui/icons";
 import { Delete } from "@material-ui/icons";
 import DeletePost from "../DeletePost/DeletePost";
-import PostButtons from "../PostStatus/PostStatus";
 
-function Post({
-  post_id,
-  name,
-  profilePic,
-  createdAt,
-  title,
-  text,
-  user_id,
-  image,
-  private_post,
-  makePostPublic,
-  makePostPrivate,
-}) {
+function Post({ post_id, name, profilePic, createdAt, title, text, image }) {
   const { user } = useContext(AuthContext);
   const [alreadyLiked, setLiked] = useState(false);
   const [alreadyDisliked, setDisliked] = useState(false);
@@ -120,14 +107,6 @@ function Post({
           <span>{moment(createdAt).fromNow()}</span>
         </div>
         {user.name == name ? <DeletePost id={post_id} /> : <p></p>}
-        <PostButtons
-          user_id={user.user_id}
-          post_id={post_id}
-          author_id={user_id}
-          isPrivate={private_post}
-          makePostPrivate={makePostPrivate}
-          makePostPublic={makePostPublic}
-        />
       </div>
       <div className="postContent">
         <h3>{title}</h3>

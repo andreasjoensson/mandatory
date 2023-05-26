@@ -7,12 +7,8 @@ import { gql, useMutation } from "@apollo/client";
 import { AuthContext } from "../../context/auth";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
+import Spline from "@splinetool/react-spline";
 import { Redirect } from "react-router-dom";
-import { PerspectiveCamera } from "@react-three/drei";
-import { Suspense } from "react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import SplineScene from "../../components/SplineScene/SplineScene";
 
 const LOGIN_QUERY = gql`
   mutation login($name: String!, $password: String!) {
@@ -30,7 +26,7 @@ const LOGIN_QUERY = gql`
   }
 `;
 
-export default function Login({ ...props }) {
+export default function Login() {
   const context = useContext(AuthContext);
   const [name, setName] = useState("");
   const history = useHistory();
@@ -173,12 +169,10 @@ export default function Login({ ...props }) {
           )}
         </div>
       </div>
-      <div className="col-6 spline-scene">
-        <img
-          className="spline-image"
-          src={require("../../assets/images/mettes.png")}
-        />
-      </div>
+      <Spline
+        className="spline"
+        scene="https://prod.spline.design/oPYLiDyNhuFxiZZc/scene.splinecode"
+      />
     </div>
   );
 }

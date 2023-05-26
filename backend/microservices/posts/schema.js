@@ -15,8 +15,6 @@ const typeDefs = gql`
       community_id: ID!
     ): Post
     deletePost(post_id: ID!): Post
-    makePostPrivate(post_id: ID!): Post
-    makePostPublic(post_id: ID!): Post
   }
 
   type Post @key(fields: "post_id") {
@@ -31,7 +29,6 @@ const typeDefs = gql`
     image: String
     comments: [Comment]
     likes: [Like]
-    isprivate: Boolean!
   }
 
   type Like @key(fields: "id") {

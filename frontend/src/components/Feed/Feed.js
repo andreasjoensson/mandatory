@@ -25,33 +25,9 @@ function Feed() {
         profilepic
         name
         created_at
-        isprivate
       }
     }
   `;
-
-  const MAKE_POST_PRIVATE = gql`
-    mutation MakePostPrivate($post_id: ID!) {
-      makePostPrivate(post_id: $post_id) {
-        user_id
-      }
-    }
-  `;
-
-  const MAKE_POST_PUBLIC = gql`
-    mutation MakePostPublic($post_id: ID!) {
-      makePostPublic(post_id: $post_id) {
-        user_id
-      }
-    }
-  `;
-
-  const [makePostPrivate] = useMutation(MAKE_POST_PRIVATE, {
-    refetchQueries: [{ query: FETCH_POSTS }], // Refetch the GET_POSTS query after making a post public
-  });
-  const [makePostPublic] = useMutation(MAKE_POST_PUBLIC, {
-    refetchQueries: [{ query: FETCH_POSTS }], // Refetch the GET_POSTS query after making a post public
-  });
 
   const logoutFunc = (e) => {
     e.preventDefault();
@@ -105,12 +81,8 @@ function Feed() {
                 name={post.name}
                 profilePic={post.profilepic}
                 title={post.title}
-                user_id={post.user_id}
                 text={post.text}
-                private_post={post.isprivate}
                 image={post?.image}
-                makePostPublic={makePostPublic}
-                makePostPrivate={makePostPrivate}
               />
             ))}
           </div>

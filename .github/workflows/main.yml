@@ -1,0 +1,92 @@
+name: Build and Deploy to Azure
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Docker Login
+        run: echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login fjaesbog.azurecr.io -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+
+      - name: Build and push Docker image for community service
+        uses: docker/build-push-action@v2
+        with:
+          context: ./backend/microservices/community
+          push: true
+          tags: fjaesbog.azurecr.io/community:${{ github.sha }}
+
+      - name: Build and push Docker image for email service
+        uses: docker/build-push-action@v2
+        with:
+          context: ./backend/microservices/email
+          push: true
+          tags: fjaesbog.azurecr.io/email:${{ github.sha }}
+
+      - name: Build and push Docker image for posts service
+        uses: docker/build-push-action@v2
+        with:
+          context: ./backend/microservices/posts
+          push: true
+          tags: fjaesbog.azurecr.io/posts:${{ github.sha }}
+
+      - name: Build and push Docker image for reactions service
+        uses: docker/build-push-action@v2
+        with:
+          context: ./backend/microservices/reactions
+          push: true
+          tags: fjaesbog.azurecr.io/reactions:${{ github.sha }}
+
+      - name: Build and push Docker image for user service
+        uses: docker/build-push-action@v2
+        with:
+          context: ./backend/microservices/user
+          push: true
+          tags: fjaesbog.azurecr.io/user:${{ github.sha }}
+
+      - name: Build and push Docker image for gateway serokay vice
+        uses: docker/build-push-action@v2
+        with:
+          context: ./backend/microservices/gateway
+          push: true
+          tags: fjaesbog.azurecr.io/gateway:${{ github.sha }}
+
+      # Assuming you have same steps for building and pushing docker images
+
+      - name: Get subscription id
+        id: account
+        uses: azure/CLI@v1
+        with:
+          azcliversion: "latest"
+          inlineScript: echo "::set-output name=subscription::$(az account show --query id --output tsv)"
+
+      - name: Set up Azure CLI
+        uses: azure/CLI@v1
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az account set --subscription $(az account show --query id --output tsv)
+            az webapp config container set --name fjaesbog-community --resource-group fjaesbog --docker-custom-image-name fjaesbog.azurecr.io/community:${{ github.sha }} --docker-registry-server-url https://fjaesbog.azurecr.io --docker-registry-server-user ${{ secrets.REGISTRY_USERNAME }} --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }}
+            az webapp config container set --name fjaesbog-email --resource-group fjaesbog --docker-custom-image-name fjaesbog.azurecr.io/email:${{ github.sha }} --docker-registry-server-url https://fjaesbog.azurecr.io --docker-registry-server-user ${{ secrets.REGISTRY_USERNAME }} --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }}
+            az webapp config container set --name fjaesbog-posts --resource-group fjaesbog --docker-custom-image-name fjaesbog.azurecr.io/posts:${{ github.sha }} --docker-registry-server-url https://fjaesbog.azurecr.io --docker-registry-server-user ${{ secrets.REGISTRY_USERNAME }} --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }}
+            az webapp config container set --name fjaesbog-reactions --resource-group fjaesbog --docker-custom-image-name fjaesbog.azurecr.io/reactions:${{ github.sha }} --docker-registry-server-url https://fjaesbog.azurecr.io --docker-registry-server-user ${{ secrets.REGISTRY_USERNAME }} --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }}
+            az webapp config container set --name fjaesbog-user --resource-group fjaesbog --docker-custom-image-name fjaesbog.azurecr.io/user:${{ github.sha }} --docker-registry-server-url https://fjaesbog.azurecr.io --docker-registry-server-user ${{ secrets.REGISTRY_USERNAME }} --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }}
+            az webapp config container set --name fjaesbog-gateway --resource-group fjaesbog --docker-custom-image-name fjaesbog.azurecr.io/gateway:${{ github.sha }} --docker-registry-server-url https://fjaesbog.azurecr.io --docker-registry-server-user ${{ secrets.REGISTRY_USERNAME }} --docker-registry-server-password ${{ secrets.REGISTRY_PASSWORD }}
+            az webapp config appsettings set --resource-group fjaesbog --name fjaesbog-community --settings WEBSITES_PORT=1000
+            az webapp config appsettings set --resource-group fjaesbog --name fjaesbog-user --settings WEBSITES_PORT=2000
+            az webapp config appsettings set --resource-group fjaesbog --name fjaesbog-posts --settings WEBSITES_PORT=4000
+            az webapp config appsettings set --resource-group fjaesbog --name fjaesbog-reactions --settings WEBSITES_PORT=5500
+            az webapp config appsettings set --resource-group fjaesbog --name fjaesbog-email --settings WEBSITES_PORT=1040
+            az webapp config appsettings set --resource-group fjaesbog --name fjaesbog-gateway --settings WEBSITES_PORT=9000
